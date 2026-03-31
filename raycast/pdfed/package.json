@@ -1,0 +1,136 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "pdfed",
+  "title": "pdfed",
+  "description": "Run pdfed (split, merge, optimize, rotate, …) from Raycast",
+  "icon": "assets/extension-icon.png",
+  "author": "pdfed",
+  "categories": [
+    "Productivity",
+    "Developer Tools"
+  ],
+  "license": "MIT",
+  "platforms": [
+    "macOS"
+  ],
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "preferences": [
+    {
+      "name": "pdfedPath",
+      "title": "pdfed binary path",
+      "description": "Optional absolute path to the pdfed executable. Leave empty to auto-detect (Homebrew, /usr/local, PATH).",
+      "type": "textfield",
+      "required": false
+    },
+    {
+      "name": "afterSuccess",
+      "title": "After a successful write",
+      "description": "Copy the output path, open it in the default app (e.g. Preview), both, or neither.",
+      "type": "dropdown",
+      "required": false,
+      "default": "none",
+      "data": [
+        {
+          "title": "Nothing else",
+          "value": "none"
+        },
+        {
+          "title": "Copy output path",
+          "value": "copy"
+        },
+        {
+          "title": "Open in default app",
+          "value": "open"
+        },
+        {
+          "title": "Copy path and open",
+          "value": "copy_and_open"
+        }
+      ]
+    }
+  ],
+  "commands": [
+    {
+      "name": "merge-pdfs",
+      "title": "Merge PDFs",
+      "subtitle": "pdfed merge",
+      "description": "Combine multiple PDFs with pdfed merge",
+      "mode": "view"
+    },
+    {
+      "name": "optimize-pdf",
+      "title": "Optimize PDF",
+      "subtitle": "pdfed optimize",
+      "description": "Compress a PDF in place or to a new file",
+      "mode": "view"
+    },
+    {
+      "name": "rotate-pdf",
+      "title": "Rotate PDF",
+      "subtitle": "pdfed rotate",
+      "description": "Rotate pages by 90°, 180°, or 270°",
+      "mode": "view"
+    },
+    {
+      "name": "split-pdf",
+      "title": "Split PDF",
+      "subtitle": "pdfed split",
+      "description": "Extract page ranges or every page (non-interactive)",
+      "mode": "view"
+    },
+    {
+      "name": "split-pdf-printed",
+      "title": "Split PDF (Printed Pages)",
+      "subtitle": "pdfed split -p",
+      "description": "Split by printed page numbers",
+      "mode": "view"
+    },
+    {
+      "name": "split-pdf-index",
+      "title": "Split PDF (PDF Index)",
+      "subtitle": "pdfed split -P",
+      "description": "Split by raw PDF page indices",
+      "mode": "view"
+    },
+    {
+      "name": "split-pdf-extract-all",
+      "title": "Split PDF (Extract All Pages)",
+      "subtitle": "pdfed split -e",
+      "description": "Extract each page to its own file",
+      "mode": "view"
+    },
+    {
+      "name": "pdf-info",
+      "title": "PDF Info",
+      "subtitle": "pdfed info",
+      "description": "Show PDF metadata and properties",
+      "mode": "view"
+    },
+    {
+      "name": "add-images",
+      "title": "Add Images to PDF",
+      "subtitle": "pdfed add-images",
+      "description": "Append images as new pages or create a PDF from images",
+      "mode": "view"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.79.0",
+    "@raycast/utils": "^1.17.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^1.0.11",
+    "@types/node": "22.13.10",
+    "@types/react": "19.0.10",
+    "eslint": "^8.57.0",
+    "typescript": "^5.4.0"
+  },
+  "scripts": {
+    "build": "npx ray build -e dist -o .",
+    "dev": "npx ray develop",
+    "lint": "npx ray lint",
+    "fix-lint": "npx ray lint --fix"
+  }
+}

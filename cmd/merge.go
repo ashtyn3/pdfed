@@ -98,7 +98,9 @@ func runMerge(cmd *cobra.Command, args []string) error {
 
 		validInputs = append(validInputs, f)
 		totalPages += pageCount
-		printf("  %s %s (%d pages)\n", cyan("•"), filepath.Base(f), pageCount)
+		if !quiet {
+			printf("  %s %s (%d pages)\n", cyan("•"), filepath.Base(f), pageCount)
+		}
 	}
 
 	if len(validInputs) < 2 {
@@ -109,6 +111,15 @@ func runMerge(cmd *cobra.Command, args []string) error {
 
 	if mergeDryRun {
 		printInfo(fmt.Sprintf("Would create: %s", outputFile))
+		if jsonOut {
+			return jsonResultOK("merge", map[string]interface{}{
+				"dry_run":     true,
+				"output":      outputFile,
+				"input_count": len(validInputs),
+				"page_count":  totalPages,
+				"inputs":      validInputs,
+			})
+		}
 		return nil
 	}
 
@@ -133,6 +144,15 @@ func runMerge(cmd *cobra.Command, args []string) error {
 	}
 
 	printSuccess(fmt.Sprintf("Created: %s (%s)", outputFile, formatFileSize(outputInfo.Size())))
+	if jsonOut {
+		return jsonResultOK("merge", map[string]interface{}{
+			"output":      outputFile,
+			"size_bytes":  outputInfo.Size(),
+			"size_human":  formatFileSize(outputInfo.Size()),
+			"input_count": len(validInputs),
+			"page_count":  totalPages,
+		})
+	}
 	return nil
 }
 

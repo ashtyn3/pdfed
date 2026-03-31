@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.log
+
+# Compiled command bundles (ray build -o .)
+/*.js
+/*.js.map

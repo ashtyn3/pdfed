@@ -44,6 +44,9 @@ searchCmd.Flags().BoolVar(&noInteractive, "no-interactive", false, "Print result
 }
 
 func runSearch(cmd *cobra.Command, args []string) error {
+if jsonOut {
+return fmt.Errorf("search is interactive and does not support --json")
+}
 inputFile := args[0]
 var initialQuery string
 if len(args) > 1 {

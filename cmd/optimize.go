@@ -41,6 +41,19 @@ func runOptimize(inFile string) error {
 
 	if optimizeDryRun {
 		printInfo("[dry-run] would optimize (no output written)")
+		if jsonOut {
+			out := optimizeOutput
+			if out == "" {
+				out = inFile
+			}
+			return jsonResultOK("optimize", map[string]interface{}{
+				"dry_run":           true,
+				"input":             inFile,
+				"output":            out,
+				"input_size_bytes":  origSize,
+				"input_size_human":  humanSize(origSize),
+			})
+		}
 		return nil
 	}
 
@@ -53,15 +66,36 @@ func runOptimize(inFile string) error {
 		return err
 	}
 
-	fi2, _ := os.Stat(outFile)
-	if fi2 != nil {
-		saved := origSize - fi2.Size()
-		pct := float64(saved) / float64(origSize) * 100
-		if saved > 0 {
-			printSuccess(fmt.Sprintf("%s → %s (saved %s, %.1f%%)", humanSize(origSize), humanSize(fi2.Size()), humanSize(saved), pct))
-		} else {
-			printSuccess(fmt.Sprintf("%s → %s (already optimal)", humanSize(origSize), humanSize(fi2.Size())))
+	fi2, err := os.Stat(outFile)
+	if err != nil {
+		if jsonOut {
+			return fmt.Errorf("stat output after optimize: %w", err)
 		}
+		return nil
+	}
+	saved := origSize - fi2.Size()
+	pct := float64(0)
+	if origSize > 0 {
+		pct = float64(saved) / float64(origSize) * 100
+	}
+	if saved > 0 {
+		printSuccess(fmt.Sprintf("%s → %s (saved %s, %.1f%%)", humanSize(origSize), humanSize(fi2.Size()), humanSize(saved), pct))
+	} else {
+		printSuccess(fmt.Sprintf("%s → %s (already optimal)", humanSize(origSize), humanSize(fi2.Size())))
+	}
+	if jsonOut {
+		outSz := fi2.Size()
+		return jsonResultOK("optimize", map[string]interface{}{
+			"input":             inFile,
+			"output":            outFile,
+			"input_size_bytes":  origSize,
+			"output_size_bytes": outSz,
+			"saved_bytes":       saved,
+			"saved_percent":     pct,
+			"input_size_human":  humanSize(origSize),
+			"output_size_human": humanSize(outSz),
+			"saved_human":       humanSize(abs64(saved)),
+		})
 	}
 	return nil
 }

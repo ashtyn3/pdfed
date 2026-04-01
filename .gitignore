@@ -1,0 +1,7 @@
+# Desktop app local artifacts
+desktop/electrobun/node_modules/
+desktop/electrobun/build/
+desktop/electrobun/dist/
+
+# OS/editor noise
+.DS_Store

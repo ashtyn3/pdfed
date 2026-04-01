@@ -1,0 +1,21 @@
+{
+  "name": "pdfed-electrobun",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:view": "vite build",
+    "dev": "bun run build:view && electrobun build --env=dev && sh scripts/open-dev-app.sh",
+    "build": "bun run build:view && electrobun build",
+    "build:mac:signed": "bun run build:view && ELECTROBUN_CODESIGN=1 electrobun build",
+    "build:mac:notarized": "bun run build:view && ELECTROBUN_CODESIGN=1 ELECTROBUN_NOTARIZE=1 electrobun build",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "electrobun": "latest",
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "svelte": "^5.39.6",
+    "vite": "^7.1.3",
+    "typescript": "^5.9.2"
+  }
+}

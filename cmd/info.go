@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/pdfcpu/pdfcpu/pkg/api"
+	"github.com/pdfcpu/pdfcpu/pkg/pdfcpu"
 	"github.com/spf13/cobra"
 )
 
@@ -39,6 +40,10 @@ func runInfo(inFile string) error {
 	fi, err := os.Stat(inFile)
 	if err != nil {
 		return err
+	}
+
+	if jsonOut {
+		return emitInfoJSON(inFile, fi, info)
 	}
 
 	row := func(label, value string) {
@@ -99,6 +104,49 @@ func runInfo(inFile string) error {
 	feature("Attachments", len(info.Attachments) > 0)
 	fmt.Println()
 	return nil
+}
+
+func emitInfoJSON(path string, fi os.FileInfo, info *pdfcpu.PDFInfo) error {
+	doc := map[string]interface{}{
+		"file":        path,
+		"size_bytes":  fi.Size(),
+		"size_human":  humanSize(fi.Size()),
+		"pdf_version": info.Version,
+		"page_count":  info.PageCount,
+	}
+	if len(info.Dimensions) > 0 {
+		d := info.Dimensions[0]
+		doc["page_width_pt"] = d.Width
+		doc["page_height_pt"] = d.Height
+		doc["page_width_mm"] = d.Width * 0.352778
+		doc["page_height_mm"] = d.Height * 0.352778
+	}
+	meta := map[string]interface{}{
+		"title":      info.Title,
+		"author":     info.Author,
+		"subject":    info.Subject,
+		"creator":    info.Creator,
+		"producer":   info.Producer,
+		"created":    info.CreationDate,
+		"modified":   info.ModificationDate,
+		"keywords":   info.Keywords,
+	}
+	features := map[string]interface{}{
+		"encrypted":       info.Encrypted,
+		"linearized":      info.Linearized,
+		"tagged":          info.Tagged,
+		"watermarked":     info.Watermarked,
+		"outlines":        info.Outlines,
+		"form_fields":     info.Form,
+		"signatures":      info.Signatures,
+		"has_attachments": len(info.Attachments) > 0,
+	}
+	return jsonResultOK("info", map[string]interface{}{
+		"input":    path,
+		"document": doc,
+		"metadata": meta,
+		"features": features,
+	})
 }
 
 func humanSize(b int64) string {

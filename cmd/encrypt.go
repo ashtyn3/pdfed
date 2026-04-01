@@ -63,6 +63,18 @@ func runEncrypt(inFile string) error {
 		size = fmt.Sprintf(" (%s)", humanSize(fi.Size()))
 	}
 	printSuccess(fmt.Sprintf("Encrypted: %s%s", outFile, size))
+	if jsonOut {
+		fields := map[string]interface{}{
+			"input":    inFile,
+			"output":   outFile,
+			"in_place": outFile == inFile,
+		}
+		if fi != nil {
+			fields["size_bytes"] = fi.Size()
+			fields["size_human"] = humanSize(fi.Size())
+		}
+		return jsonResultOK("encrypt", fields)
+	}
 	return nil
 }
 
@@ -114,5 +126,17 @@ func runDecrypt(inFile string) error {
 		size = fmt.Sprintf(" (%s)", humanSize(fi.Size()))
 	}
 	printSuccess(fmt.Sprintf("Decrypted: %s%s", outFile, size))
+	if jsonOut {
+		fields := map[string]interface{}{
+			"input":    inFile,
+			"output":   outFile,
+			"in_place": outFile == inFile,
+		}
+		if fi != nil {
+			fields["size_bytes"] = fi.Size()
+			fields["size_human"] = humanSize(fi.Size())
+		}
+		return jsonResultOK("decrypt", fields)
+	}
 	return nil
 }

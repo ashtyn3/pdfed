@@ -83,6 +83,9 @@ func runSplit(cmd *cobra.Command, args []string) error {
 
 	// No page selection → open interactive TUI in split mode.
 	if pages == "" && pdfPages == "" && !extractAll && !dryRun {
+		if jsonOut {
+			return fmt.Errorf("split without -p/-P/-e/-n opens an interactive UI; not available with --json")
+		}
 		printInfo("Loading text for search…")
 		allLines, _ := loadLines(inputFile)
 		return runAppTUI(inputFile, pageCount, allLines, modeSplit, "")
@@ -118,6 +121,20 @@ func extractAllPages(inputFile string, pageCount int) error {
 		for i := 1; i <= pageCount; i++ {
 			printf("  %s %s_page_%03d.pdf\n", cyan("→"), baseName, i)
 		}
+		if jsonOut {
+			would := make([]string, 0, pageCount)
+			for i := 1; i <= pageCount; i++ {
+				would = append(would, filepath.Join(outDir, fmt.Sprintf("%s_page_%03d.pdf", baseName, i)))
+			}
+			return jsonResultOK("split", map[string]interface{}{
+				"dry_run":       true,
+				"mode":          "extract_all",
+				"input":         inputFile,
+				"output":        outDir,
+				"page_count":    pageCount,
+				"would_create":  would,
+			})
+		}
 		return nil
 	}
 
@@ -151,6 +168,14 @@ func extractAllPages(inputFile string, pageCount int) error {
 	}
 
 	printSuccess(fmt.Sprintf("Extracted %d pages to %s/", pageCount, outDir))
+	if jsonOut {
+		return jsonResultOK("split", map[string]interface{}{
+			"mode":       "extract_all",
+			"input":      inputFile,
+			"output":     outDir,
+			"page_count": pageCount,
+		})
+	}
 	return nil
 }
 
@@ -207,6 +232,21 @@ func extractPageRanges(inputFile string, pageCount int) error {
 			previewFile = fmt.Sprintf("%s_pages_%s.pdf", baseName, sanitizedPages)
 		}
 		printInfo(fmt.Sprintf("Would create: %s", previewFile))
+		if jsonOut {
+			mode := "printed_pages"
+			if pdfPages != "" {
+				mode = "pdf_pages"
+			}
+			return jsonResultOK("split", map[string]interface{}{
+				"dry_run":        true,
+				"mode":           mode,
+				"input":          inputFile,
+				"output":         previewFile,
+				"range":          rangeStr,
+				"pdf_page_count": len(pageList),
+				"pdf_pages":      pageList,
+			})
+		}
 		return nil
 	}
 
@@ -220,6 +260,22 @@ func extractPageRanges(inputFile string, pageCount int) error {
 	}
 
 	printSuccess(fmt.Sprintf("Created: %s (%s)", outputFile, formatFileSize(outputInfo.Size())))
+	if jsonOut {
+		mode := "printed_pages"
+		if pdfPages != "" {
+			mode = "pdf_pages"
+		}
+		return jsonResultOK("split", map[string]interface{}{
+			"mode":           mode,
+			"input":          inputFile,
+			"output":         outputFile,
+			"range":          rangeStr,
+			"pdf_page_count": len(pageList),
+			"pdf_pages":      pageList,
+			"size_bytes":     outputInfo.Size(),
+			"size_human":     formatFileSize(outputInfo.Size()),
+		})
+	}
 	return nil
 }
 

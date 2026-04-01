@@ -47,6 +47,9 @@ var version = "0.2.0"
 
 var quiet bool
 
+// jsonOut: emit a single JSON object to stdout per invocation; implies quiet human output.
+var jsonOut bool
+
 var (
 	bold    = color.New(color.Bold).SprintFunc()
 	green   = color.New(color.FgGreen).SprintFunc()
@@ -71,6 +74,7 @@ var rootCmd = &cobra.Command{
   • %s   Password-protect a PDF
   • %s    Remove password protection
   • %s    Fuzzy-search text across a PDF
+  • %s Add images as new pages (or build a PDF from images)
 
 %s
   pdfed split input.pdf -p 1-5            Extract pages 1-5
@@ -81,6 +85,7 @@ var rootCmd = &cobra.Command{
   pdfed optimize input.pdf -o out.pdf     Compress PDF
   pdfed encrypt input.pdf --user-pw pass  Password-protect
   pdfed search input.pdf                  Fuzzy search TUI
+  pdfed add-images doc.pdf scan.png       Append image as new page
 
 %s https://github.com/pdfcpu/pdfcpu`,
 		bold("pdfed"),
@@ -93,6 +98,7 @@ var rootCmd = &cobra.Command{
 		cyan("encrypt"),
 		cyan("decrypt"),
 		cyan("search"),
+		cyan("add-images"),
 		bold("Examples:"),
 		magenta("Powered by"),
 	),
@@ -101,13 +107,28 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, red("Error:"), err)
+		if jsonOut {
+			_ = jsonEmit(map[string]interface{}{"ok": false, "error": err.Error()})
+		} else {
+			fmt.Fprintln(os.Stderr, red("Error:"), err)
+		}
 		os.Exit(1)
 	}
 }
 
 func init() {
 	rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "Suppress non-essential output")
+	rootCmd.PersistentFlags().BoolVar(&jsonOut, "json", false, "Emit machine-readable JSON to stdout (implies -q)")
+	rootCmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
+		if jsonOut {
+			quiet = true
+			rootCmd.SilenceUsage = true
+			rootCmd.SilenceErrors = true
+			cmd.SilenceUsage = true
+			cmd.SilenceErrors = true
+		}
+		return nil
+	}
 	rootCmd.SetVersionTemplate(fmt.Sprintf("%s version %s\n", bold("pdfed"), cyan(version)))
 	rootCmd.CompletionOptions.DisableDefaultCmd = false
 }

@@ -182,6 +182,7 @@ pdfed decrypt input.pdf --password "secret" -o unlocked.pdf
 | Flag | Description |
 |------|-------------|
 | `-q` / `--quiet` | Suppress non-essential output |
+| `--json` | Emit a single JSON object to stdout (implies `-q`). On failure, stdout is `{"ok":false,"error":"…"}`. Use for scripts and tools (e.g. the Raycast extension). Not supported for interactive-only commands (`search`, or `split` with no page flags). |
 | `--dry-run` / `-n` | Preview without writing (split, merge, rotate, optimize) |
 
 ## Built With

@@ -53,6 +53,23 @@ func runRotate(inFile string, degrees int) error {
 
 	if rotateDryRun {
 		printInfo(fmt.Sprintf("[dry-run] would rotate %s by %d°", pageDesc, degrees))
+		if jsonOut {
+			out := rotateOutput
+			if out == "" {
+				out = inFile
+			}
+			fields := map[string]interface{}{
+				"dry_run":  true,
+				"input":    inFile,
+				"output":   out,
+				"degrees":  degrees,
+				"in_place": rotateOutput == "",
+			}
+			if rotatePages != "" {
+				fields["pages"] = rotatePages
+			}
+			return jsonResultOK("rotate", fields)
+		}
 		return nil
 	}
 
@@ -75,6 +92,22 @@ func runRotate(inFile string, degrees int) error {
 		printSuccess(fmt.Sprintf("Rotated in-place: %s%s", outFile, size))
 	} else {
 		printSuccess(fmt.Sprintf("Created: %s%s", outFile, size))
+	}
+	if jsonOut {
+		fields := map[string]interface{}{
+			"input":    inFile,
+			"output":   outFile,
+			"degrees":  degrees,
+			"in_place": outFile == inFile,
+		}
+		if rotatePages != "" {
+			fields["pages"] = rotatePages
+		}
+		if fi != nil {
+			fields["size_bytes"] = fi.Size()
+			fields["size_human"] = humanSize(fi.Size())
+		}
+		return jsonResultOK("rotate", fields)
 	}
 	return nil
 }
